@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  hotelUsers HotelUser[]
+  hotels     Hotel[]   // Hotels owned by this user
+}
+
+model Hotel {
+  id        String   @id @default(cuid())
+  ownerId   String
+  name      String
+  timezone  String
+  currency  String
+  createdAt DateTime @default(now())
+
+  owner      User        @relation(fields: [ownerId], references: [id])
+  hotelUsers HotelUser[]
+  rooms      Room[]
+  bookings   Booking[]
+}
+
+model HotelUser {
+  id      String @id @default(cuid())
+  userId  String
+  hotelId String
+  role    String // OWNER | MANAGER | STAFF
+
+  user  User  @relation(fields: [userId], references: [id])
+  hotel Hotel @relation(fields: [hotelId], references: [id])
+}
+
+model Room {
+  id          String   @id @default(cuid())
+  hotelId     String
+  name        String
+  description String?
+  maxGuests   Int
+  basePrice   Float
+  createdAt   DateTime @default(now())
+
+  hotel          Hotel            @relation(fields: [hotelId], references: [id])
+  availabilities Availability[]
+  bookings       Booking[]
+}
+
+model Availability {
+  id         String   @id @default(cuid())
+  roomId     String
+  date       DateTime
+  isAvailable Boolean  @default(true)
+  price      Float?
+
+  room Room @relation(fields: [roomId], references: [id])
+}
+
+model Guest {
+  id        String   @id @default(cuid())
+  email     String
+  phone     String?
+  fullName  String
+  createdAt DateTime @default(now())
+
+  bookings Booking[]
+}
+
+model Booking {
+  id              String   @id @default(cuid())
+  hotelId         String
+  roomId          String
+  guestId         String?
+  status          String   // PENDING | CONFIRMED | CANCELLED
+  checkInDate     DateTime
+  checkOutDate    DateTime
+  totalPrice      Float
+  createdAt       DateTime @default(now())
+
+  hotel           Hotel            @relation(fields: [hotelId], references: [id])
+  room            Room             @relation(fields: [roomId], references: [id])
+  guest           Guest?           @relation(fields: [guestId], references: [id])
+  bookingGuests   BookingGuest[]
+  payments        Payment[]
+  checkInSessions CheckInSession[]
+  messages        Message[]
+}
+
+model BookingGuest {
+  id             String @id @default(cuid())
+  bookingId      String
+  fullName       String
+  documentNumber String
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  bookingId String
+  amount    Float
+  status    String   // PENDING | PAID | FAILED
+  provider  String
+  createdAt DateTime @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+}
+
+model CheckInSession {
+  id        String   @id @default(cuid())
+  bookingId String
+  token     String   @unique
+  expiresAt DateTime
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  booking     Booking       @relation(fields: [bookingId], references: [id])
+  checkInData CheckInData[]
+}
+
+model CheckInData {
+  id               String @id @default(cuid())
+  checkInSessionId String
+  guestName        String
+  documentNumber   String
+  documentPhotoUrl String?
+  signed           Boolean @default(false)
+
+  checkInSession CheckInSession @relation(fields: [checkInSessionId], references: [id])
+}
+
+model File {
+  id        String   @id @default(cuid())
+  url       String
+  type      String   // IMAGE | DOCUMENT
+  size      Int
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  bookingId   String
+  senderType  String   // GUEST | HOST
+  content     String
+  createdAt   DateTime @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+}
