@@ -103,6 +103,7 @@ model Room {
   id           String   @id @default(cuid())
   hotelId      String
   name         String
+  description  String?  // Room description
   roomType     String   // STANDARD, DELUXE тощо
   maxGuests    Int
   quantity     Int      @default(1) // Кількість фізичних одиниць

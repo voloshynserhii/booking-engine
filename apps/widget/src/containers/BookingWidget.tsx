@@ -1,6 +1,8 @@
 import { RoomCard } from '@/src/components';
 import { DatePicker } from '@/src/components/DatePicker';
 import { GuestSelector } from '@/src/components/GuestSelector';
+import { BookingSummary } from '@/src/components/BookingSummary';
+import { BookingConfirmation } from '@/src/components/BookingConfirmation';
 import { rooms } from '@/src/data/rooms';
 import { useState } from 'react';
 import { Room, RatePlan } from '@/src/types';
@@ -12,6 +14,7 @@ export const BookingWidget = () => {
   // Modal states
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showGuestSelector, setShowGuestSelector] = useState(false);
+  const [showBookingConfirmation, setShowBookingConfirmation] = useState(false);
 
   // Booking data
   const [checkInDate, setCheckInDate] = useState(new Date());
@@ -20,10 +23,13 @@ export const BookingWidget = () => {
   const [adultsCount, setAdultsCount] = useState(2);
   const [childrenCount, setChildrenCount] = useState(0);
 
+  // Booking flow states
+  const [isBooking, setIsBooking] = useState(false);
+  const [bookingId, setBookingId] = useState<string | null>(null);
+
   const handleRateSelect = (room: Room, ratePlan: RatePlan) => {
     setSelectedRoom(room);
     setSelectedRatePlan(ratePlan);
-    console.log('Selected:', { room: room.name, ratePlan: ratePlan.name });
   };
 
   const handleDateSelect = (checkIn: Date, checkOut: Date) => {
@@ -35,6 +41,30 @@ export const BookingWidget = () => {
     setRoomsCount(rooms);
     setAdultsCount(adults);
     setChildrenCount(children);
+  };
+
+  const handleBook = async () => {
+    if (!selectedRoom || !selectedRatePlan) return;
+
+    setIsBooking(true);
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Generate booking ID
+    const newBookingId = `BK${Date.now().toString().slice(-8)}`;
+    setBookingId(newBookingId);
+
+    setIsBooking(false);
+    setShowBookingConfirmation(true);
+  };
+
+  const handleConfirmationClose = () => {
+    setShowBookingConfirmation(false);
+    // Reset booking state
+    setSelectedRoom(null);
+    setSelectedRatePlan(null);
+    setBookingId(null);
   };
 
   const formatDateRange = () => {
@@ -106,32 +136,59 @@ export const BookingWidget = () => {
             ))}
           </div>
 
-          {/* Sidebar Summary */}
+          {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 sticky top-4">
-              <div className="flex justify-between text-xs text-gray-500 mb-4">
-                <span>{formatDateRange()}</span>
-                <span>{Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} nights</span>
-              </div>
-              <div className="text-sm font-medium mb-6">{formatGuests()}</div>
-
-              {selectedRoom && selectedRatePlan && (
-                <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <h4 className="font-semibold text-blue-800 mb-2">Selected:</h4>
-                  <p className="text-sm text-blue-700">{selectedRoom.name}</p>
-                  <p className="text-sm text-blue-600">{selectedRatePlan.name}</p>
+            {selectedRoom && selectedRatePlan ? (
+              <BookingSummary
+                room={selectedRoom}
+                ratePlan={selectedRatePlan}
+                checkInDate={checkInDate}
+                checkOutDate={checkOutDate}
+                roomsCount={roomsCount}
+                adultsCount={adultsCount}
+                childrenCount={childrenCount}
+                onBook={handleBook}
+                isLoading={isBooking}
+              />
+            ) : (
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 sticky top-4">
+                <div className="flex justify-between text-xs text-gray-500 mb-4">
+                  <span>{formatDateRange()}</span>
+                  <span>{Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} nights</span>
                 </div>
-              )}
+                <div className="text-sm font-medium mb-6">{formatGuests()}</div>
 
-              <div className="p-4 bg-stone-100 rounded text-center text-gray-500 text-sm mb-4">
-                {selectedRoom && selectedRatePlan ? 'Ready to book!' : 'Select a rate to continue'}
+                <div className="p-4 bg-stone-100 rounded text-center text-gray-500 text-sm mb-4">
+                  Select a room and rate to continue
+                </div>
+                <button disabled className="w-full bg-stone-200 text-stone-400 py-3 rounded font-bold cursor-not-allowed">
+                  Book
+                </button>
               </div>
-              <button disabled className="w-full bg-stone-200 text-stone-400 py-3 rounded font-bold cursor-not-allowed">
-                Book
-              </button>
-            </div>
+            )}
           </div>
         </div>
+
+        {/* Booking Confirmation Modal */}
+        {selectedRoom && selectedRatePlan && bookingId && (
+          <BookingConfirmation
+            isOpen={showBookingConfirmation}
+            onClose={handleConfirmationClose}
+            bookingDetails={{
+              room: selectedRoom,
+              ratePlan: selectedRatePlan,
+              checkInDate,
+              checkOutDate,
+              roomsCount,
+              adultsCount,
+              childrenCount,
+              totalPrice: (selectedRoom.prices?.reduce((min, price) => Math.min(min, price.price), Infinity) || 120) *
+                         Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) *
+                         roomsCount,
+              bookingId
+            }}
+          />
+        )}
       </main>
     </div>
   );

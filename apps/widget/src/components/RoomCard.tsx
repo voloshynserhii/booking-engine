@@ -1,5 +1,6 @@
 import { Room, RatePlan } from '@/src/types';
 import { RateRow } from './RateRow';
+import { useState } from 'react';
 
 interface RoomCardProps {
   room: Room;
@@ -7,11 +8,22 @@ interface RoomCardProps {
 }
 
 export const RoomCard = ({ room, onRateSelect }: RoomCardProps) => {
+  const [showMore, setShowMore] = useState(false);
   const mainImage = room.imageUrls?.[0] || 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=800';
 
   const handleRateSelect = (ratePlan: RatePlan) => {
     onRateSelect?.(room, ratePlan);
   };
+
+  const toggleShowMore = () => {
+    setShowMore(!showMore);
+  };
+
+  // Check if description is long enough to need truncation
+  const shouldTruncateDescription = room.description && room.description.length > 300;
+  const truncatedDescription = shouldTruncateDescription && !showMore && room.description
+    ? room.description.substring(0, 300) + '...'
+    : room.description;
 
   return (
     <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden mb-6 hover:shadow-xl transition-shadow duration-300">
@@ -52,6 +64,58 @@ export const RoomCard = ({ room, onRateSelect }: RoomCardProps) => {
               </div>
             </div>
 
+            {/* Room Description */}
+            {room.description && (
+              <div className="mt-4">
+                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+                  {truncatedDescription}
+                </p>
+                {shouldTruncateDescription && (
+                  <button
+                    onClick={toggleShowMore}
+                    className="mt-2 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 bg-none border-none p-0 cursor-pointer"
+                  >
+                    {showMore ? 'Show Less' : 'Show More'}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Expandable Room Details */}
+            {showMore && (
+              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <h4 className="text-lg font-semibold text-gray-800 mb-3">Room Details</h4>
+                <div className="space-y-3 text-sm text-gray-700">
+                  <div>
+                    <span className="font-medium">Room Type:</span> {room.roomType}
+                  </div>
+                  <div>
+                    <span className="font-medium">Maximum Guests:</span> {room.maxGuests}
+                  </div>
+                  <div>
+                    <span className="font-medium">Available Rooms:</span> {room.quantity}
+                  </div>
+                  {room.hotel?.description && (
+                    <div>
+                      <span className="font-medium">Hotel Description:</span> {room.hotel.description}
+                    </div>
+                  )}
+                  {room.amenities && room.amenities.length > 0 && (
+                    <div>
+                      <span className="font-medium">Amenities:</span>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {room.amenities.map((amenity) => (
+                          <span key={amenity.id} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                            {amenity.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Rate Plans Section */}
             <div className="mt-6">
               <h4 className="text-lg font-semibold text-gray-800 mb-4">Available Rates</h4>
@@ -66,13 +130,6 @@ export const RoomCard = ({ room, onRateSelect }: RoomCardProps) => {
                 ))}
               </div>
             </div>
-          </div>
-
-          {/* Footer */}
-          <div className="mt-auto p-6 pt-0">
-            <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg font-medium transition-colors duration-200">
-              View Room Details
-            </button>
           </div>
         </div>
       </div>

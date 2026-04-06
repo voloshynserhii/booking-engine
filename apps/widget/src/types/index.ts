@@ -53,6 +53,7 @@ export interface Room {
   id: string;
   hotelId: string;
   name: string;
+  description?: string;
   roomType: string;
   maxGuests: number;
   quantity: number;
