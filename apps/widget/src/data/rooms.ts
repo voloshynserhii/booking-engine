@@ -1,5 +1,6 @@
 import { Room } from '@/src/types';
 import { hotels } from './hotels';
+import { roomPrices } from './roomPrices';
 
 export const rooms: Room[] = [
   {
@@ -15,7 +16,8 @@ export const rooms: Room[] = [
     ],
     createdAt: '2024-01-01T00:00:00Z',
     hotel: hotels[0],
-    ratePlans: hotels[0].ratePlans, // All hotel rate plans apply to this room
+    ratePlans: hotels[0].ratePlans,
+    prices: roomPrices.filter(price => price.roomId === 'r1'),
   },
   {
     id: 'r2',
@@ -30,7 +32,8 @@ export const rooms: Room[] = [
     ],
     createdAt: '2024-01-01T00:00:00Z',
     hotel: hotels[0],
-    ratePlans: hotels[0].ratePlans, // All hotel rate plans apply to this room
+    ratePlans: hotels[0].ratePlans,
+    prices: roomPrices.filter(price => price.roomId === 'r2'),
   },
   {
     id: 'r3',
@@ -45,6 +48,7 @@ export const rooms: Room[] = [
     ],
     createdAt: '2024-01-01T00:00:00Z',
     hotel: hotels[0],
-    ratePlans: hotels[0].ratePlans, // All hotel rate plans apply to this room
+    ratePlans: hotels[0].ratePlans,
+    prices: roomPrices.filter(price => price.roomId === 'r3'),
   },
 ];
