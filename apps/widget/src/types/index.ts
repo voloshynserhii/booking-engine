@@ -1,16 +1,11 @@
-export interface Rate {
-  id: string;
-  name: string;
-  price: number;
-  isAvailable: boolean;
-  features: string[];
-}
-
 export interface User {
   id: string;
   email: string;
+  passwordHash?: string;
   isVerified: boolean;
   createdAt: string;
+  updatedAt?: string;
+  deletedAt?: string;
   hotelUsers?: HotelUser[];
   hotels?: Hotel[];
   reviews?: Review[];
@@ -18,29 +13,26 @@ export interface User {
 
 export interface Hotel {
   id: string;
-  ownerId?: string;
+  ownerId: string;
   name: string;
   description?: string;
   starRating?: number;
-  timezone?: string;
-  currency?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  country?: string;
-  zipCode?: string;
+  timezone: string;
+  currency: string;
+  address: string;
+  city: string;
+  countryCode: string;
   latitude?: number;
   longitude?: number;
-  email?: string;
-  phone?: string;
-  website?: string;
-  checkInTime?: string;
-  checkOutTime?: string;
-  imageUrls?: string[];
-  createdAt?: string;
+  checkInTime: string;
+  checkOutTime: string;
+  imageUrls: string[];
+  createdAt: string;
+  updatedAt?: string;
   owner?: User;
   hotelUsers?: HotelUser[];
   rooms?: Room[];
+  ratePlans?: RatePlan[];
   bookings?: Booking[];
   amenities?: Amenity[];
   reviews?: Review[];
@@ -52,93 +44,120 @@ export interface HotelUser {
   id: string;
   userId: string;
   hotelId: string;
-  role: 'OWNER' | 'MANAGER' | 'STAFF' | string;
+  role: 'OWNER' | 'MANAGER' | 'STAFF' | 'GUEST';
   user?: User;
   hotel?: Hotel;
 }
 
 export interface Room {
   id: string;
-  hotelId?: string;
+  hotelId: string;
   name: string;
-  description?: string;
-  roomType?: string;
-  bedType?: string;
-  numberOfBeds?: number;
+  roomType: string;
   maxGuests: number;
-  size?: number;
-  quantity?: number;
-  basePrice?: number;
-  imageUrls?: string[];
-  createdAt?: string;
+  quantity: number;
+  imageUrls: string[];
+  createdAt: string;
+  updatedAt?: string;
   hotel?: Hotel;
-  roomInventories?: RoomInventory[];
+  inventories?: RoomInventory[];
+  prices?: RoomPrice[];
   bookings?: Booking[];
   amenities?: Amenity[];
-  rates?: Rate[];
+  ratePlans?: RatePlan[]; // Which rate plans apply to this room
 }
 
 export interface Amenity {
   id: string;
   name: string;
   description?: string;
-  icon?: string;
+  category?: string;
   createdAt: string;
   hotels?: Hotel[];
   rooms?: Room[];
 }
 
+export interface RatePlan {
+  id: string;
+  hotelId: string;
+  name: string;
+  description?: string;
+  mealPlan: 'NONE' | 'BREAKFAST' | 'HALF_BOARD' | 'FULL_BOARD' | 'ALL_INCLUSIVE';
+  isRefundable: boolean;
+  hotel?: Hotel;
+  rooms?: Room[]; // Which rooms this rate plan applies to
+  bookings?: Booking[];
+}
+
+export interface RoomPrice {
+  id: string;
+  roomId: string;
+  date: string;
+  price: number;
+  room?: Room;
+}
+
 export interface RoomInventory {
   roomTypeId: string;
-  date: string; // ISO 8601 (YYYY-MM-DD)
-  totalInventory: number; // Скільки всього номерів цього типу
-  bookedCount: number;    // Скільки вже заброньовано
+  date: string;
+  totalInventory: number;
+  bookedCount: number;
   status: 'available' | 'blocked' | 'sold_out';
+  room?: Room;
 }
 
 export interface Guest {
   id: string;
   email: string;
   phone?: string;
-  fullName: string;
-  createdAt: string;
+  firstName: string;
+  lastName: string;
   bookings?: Booking[];
+  bookingGuests?: BookingGuest[];
 }
 
 export interface Booking {
   id: string;
   hotelId: string;
   roomId: string;
-  guestId?: string;
-  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | string;
+  ratePlanId: string;
+  guestId: string;
+  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'NO_SHOW';
   checkInDate: string;
   checkOutDate: string;
   totalPrice: number;
+  priceAtBooking: number; // Snapshot of nightly price at booking time
+  currency: string;
   createdAt: string;
+  updatedAt?: string;
   hotel?: Hotel;
   room?: Room;
+  ratePlan?: RatePlan;
   guest?: Guest;
-  bookingGuests?: BookingGuest[];
   payments?: Payment[];
-  checkInSessions?: CheckInSession[];
   messages?: Message[];
-  reviews?: Review[];
+  checkInSessions?: CheckInSession[];
+  bookingGuests?: BookingGuest[];
 }
 
 export interface BookingGuest {
   id: string;
   bookingId: string;
-  fullName: string;
-  documentNumber: string;
+  guestId?: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
   booking?: Booking;
+  guest?: Guest;
 }
 
 export interface Payment {
   id: string;
   bookingId: string;
   amount: number;
-  status: 'PENDING' | 'PAID' | 'FAILED' | string;
-  provider: string;
+  status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
+  transactionId?: string;
   createdAt: string;
   booking?: Booking;
 }
@@ -146,12 +165,9 @@ export interface Payment {
 export interface CheckInSession {
   id: string;
   bookingId: string;
-  token: string;
-  expiresAt: string;
-  completed: boolean;
+  status: 'PENDING' | 'COMPLETED' | 'FAILED';
   createdAt: string;
   booking?: Booking;
-  checkInData?: CheckInData[];
 }
 
 export interface CheckInData {
@@ -176,8 +192,9 @@ export interface File {
 export interface Message {
   id: string;
   bookingId: string;
-  senderType: 'GUEST' | 'HOST' | string;
+  senderId: string;
   content: string;
+  isRead: boolean;
   createdAt: string;
   booking?: Booking;
 }
@@ -185,7 +202,7 @@ export interface Message {
 export interface Review {
   id: string;
   hotelId: string;
-  userId?: string;
+  userId: string;
   bookingId?: string;
   rating: number;
   comment?: string;
@@ -198,14 +215,13 @@ export interface Review {
 export interface Promotion {
   id: string;
   hotelId: string;
-  code: string;
+  name: string;
   description?: string;
-  discountType: 'PERCENTAGE' | 'FIXED' | string;
+  discountType: 'PERCENTAGE' | 'FIXED';
   discountValue: number;
-  startDate: string;
-  endDate: string;
+  validFrom: string;
+  validTo: string;
   isActive: boolean;
-  createdAt: string;
   hotel?: Hotel;
 }
 
@@ -213,9 +229,7 @@ export interface Tax {
   id: string;
   hotelId: string;
   name: string;
-  type: 'PERCENTAGE' | 'FIXED' | string;
-  value: number;
-  isMandatory: boolean;
-  createdAt: string;
+  rate: number;
+  isPercentage: boolean;
   hotel?: Hotel;
 }

@@ -1,55 +1,50 @@
 import { Room } from '@/src/types';
+import { hotels } from './hotels';
 
 export const rooms: Room[] = [
   {
     id: 'r1',
     hotelId: 'h1',
     name: 'Double Room',
-    description: 'Comfortable room with a queen-size bed, perfect for couples or solo travelers.',
-    roomType: 'Standard',
-    bedType: '1 Queen bed',
-    numberOfBeds: 1,
+    roomType: 'STANDARD',
     maxGuests: 2,
-    size: 35,
     quantity: 5,
-    basePrice: 120,
     imageUrls: [
-      'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800',
+      'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=800',
+      'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800'
     ],
     createdAt: '2024-01-01T00:00:00Z',
+    hotel: hotels[0],
+    ratePlans: hotels[0].ratePlans, // All hotel rate plans apply to this room
   },
   {
     id: 'r2',
     hotelId: 'h1',
     name: 'Deluxe Suite',
-    description: 'Spacious suite with king-size bed, living area, and premium amenities.',
-    roomType: 'Suite',
-    bedType: '1 King bed',
-    numberOfBeds: 1,
+    roomType: 'SUITE',
     maxGuests: 4,
-    size: 55,
     quantity: 3,
-    basePrice: 180,
     imageUrls: [
-      'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=800',
+      'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800',
+      'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800'
     ],
     createdAt: '2024-01-01T00:00:00Z',
+    hotel: hotels[0],
+    ratePlans: hotels[0].ratePlans, // All hotel rate plans apply to this room
   },
   {
     id: 'r3',
     hotelId: 'h1',
     name: 'Family Room',
-    description: 'Multi-room accommodation ideal for families with children.',
-    roomType: 'Family',
-    bedType: '2 Double beds + 2 Single beds',
-    numberOfBeds: 4,
+    roomType: 'FAMILY',
     maxGuests: 6,
-    size: 70,
     quantity: 2,
-    basePrice: 250,
     imageUrls: [
-      'https://images.unsplash.com/photo-1618882618692-6e6626ef1bf3?auto=format&fit=crop&w=800',
+      'https://images.unsplash.com/photo-1566195992011-5f6b21e539aa?auto=format&fit=crop&w=800',
+      'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&w=800'
     ],
     createdAt: '2024-01-01T00:00:00Z',
+    hotel: hotels[0],
+    ratePlans: hotels[0].ratePlans, // All hotel rate plans apply to this room
   },
 ];

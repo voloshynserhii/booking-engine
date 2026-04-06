@@ -1,6 +1,5 @@
 import { RoomCard } from '@/src/components';
 import { rooms } from '@/src/data/rooms';
-import { rates } from '@/src/data/rates';
 
 export const BookingWidget = () => {
   return (
@@ -32,11 +31,8 @@ export const BookingWidget = () => {
           <div className="lg:col-span-2">
             {rooms.map(room => (
               <RoomCard 
-                key={room.id} 
-                room={{
-                  ...room,
-                  rates: rates
-                }} 
+                key={room.id}
+                room={room} 
               />
             ))}
           </div>

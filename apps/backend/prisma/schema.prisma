@@ -7,52 +7,91 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id         String   @id @default(cuid())
-  email      String   @unique
-  isVerified Boolean  @default(false)
-  createdAt  DateTime @default(now())
+// --- СИСТЕМА КОРИСТУВАЧІВ ---
 
-  hotelUsers HotelUser[]
-  hotels     Hotel[] // Hotels owned by this user
-  reviews    Review[]
+enum UserRole {
+  OWNER
+  MANAGER
+  STAFF
+  GUEST
 }
 
+enum MealPlan {
+  NONE
+  BREAKFAST
+  HALF_BOARD
+  FULL_BOARD
+  ALL_INCLUSIVE
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum CheckInStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  passwordHash  String?     // Для власної авторизації
+  isVerified    Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  deletedAt     DateTime?
+
+  hotelUsers    HotelUser[]
+  hotelsOwned   Hotel[]     @relation("HotelOwner")
+  reviews       Review[]
+}
+
+model HotelUser {
+  id      String   @id @default(cuid())
+  userId  String
+  hotelId String
+  role    UserRole @default(STAFF)
+
+  user    User     @relation(fields: [userId], references: [id])
+  hotel   Hotel    @relation(fields: [hotelId], references: [id])
+
+  @@unique([userId, hotelId])
+}
+
+// --- ГОТЕЛЬ ТА НОМЕРИ ---
+
 model Hotel {
-  id          String  @id @default(cuid())
-  ownerId     String
-  name        String
-  description String?
-  starRating  Int?
-  timezone    String
-  currency    String
+  id           String   @id @default(cuid())
+  ownerId      String
+  name         String
+  description  String?
+  starRating   Int?
+  timezone     String   @default("UTC")
+  currency     String   @default("EUR")
+  
+  // Деталізація адреси
+  address      String
+  city         String
+  countryCode  String   // ISO 3166-1 alpha-2 (напр. "UA")
+  latitude     Float?
+  longitude    Float?
 
-  // Location
-  address   String?
-  city      String?
-  state     String?
-  country   String?
-  zipCode   String?
-  latitude  Float?
-  longitude Float?
+  checkInTime  String   @default("14:00")
+  checkOutTime String   @default("11:00")
+  imageUrls    String[]
 
-  // Contact
-  email   String?
-  phone   String?
-  website String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  // Policies
-  checkInTime  String?
-  checkOutTime String?
-
-  // Media
-  imageUrls String[]
-
-  createdAt DateTime @default(now())
-
-  owner      User        @relation(fields: [ownerId], references: [id])
+  owner      User        @relation("HotelOwner", fields: [ownerId], references: [id])
   hotelUsers HotelUser[]
   rooms      Room[]
+  ratePlans  RatePlan[]  // Нове: тарифи
   bookings   Booking[]
   amenities  Amenity[]   @relation("HotelAmenities")
   reviews    Review[]
@@ -60,49 +99,50 @@ model Hotel {
   taxes      Tax[]
 }
 
-model HotelUser {
-  id      String @id @default(cuid())
-  userId  String
-  hotelId String
-  role    String // OWNER | MANAGER | STAFF
-
-  user  User  @relation(fields: [userId], references: [id])
-  hotel Hotel @relation(fields: [hotelId], references: [id])
-}
-
 model Room {
-  id           String  @id @default(cuid())
+  id           String   @id @default(cuid())
   hotelId      String
   name         String
-  description  String?
-  roomType     String? // STANDARD | DELUXE | SUITE
-  bedType      String? // KING | QUEEN | TWIN
-  numberOfBeds Int?
+  roomType     String   // STANDARD, DELUXE тощо
   maxGuests    Int
-  size         Float? // in square meters
-  quantity     Int     @default(1) // Number of physical rooms of this type
-  basePrice    Float
+  quantity     Int      @default(1) // Кількість фізичних одиниць
+  imageUrls    String[] // Масив URL зображень кімнати
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  // Media
-  imageUrls String[]
-
-  createdAt DateTime @default(now())
-
-  hotel           Hotel            @relation(fields: [hotelId], references: [id])
-  roomInventories RoomInventory[]
-  bookings        Booking[]
-  amenities       Amenity[]        @relation("RoomAmenities")
+  hotel        Hotel           @relation(fields: [hotelId], references: [id])
+  inventories  RoomInventory[]
+  prices       RoomPrice[]     // Ціни на кожен день
+  bookings     Booking[]
+  amenities    Amenity[]       @relation("RoomAmenities")
+  ratePlans    RatePlan[]      // Many-to-many: which rate plans apply to this room
 }
 
-model Amenity {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  icon        String? // URL or icon name
-  createdAt   DateTime @default(now())
+// --- ЦІНОУТВОРЕННЯ ТА НАЯВНІСТЬ ---
 
-  hotels Hotel[] @relation("HotelAmenities")
-  rooms  Room[]  @relation("RoomAmenities")
+model RatePlan {
+  id          String   @id @default(cuid())
+  hotelId     String
+  name        String   // напр. "Standard Rate", "Non-Refundable"
+  description String?
+  mealPlan    MealPlan @default(NONE)
+  isRefundable Boolean @default(true)
+  
+  hotel       Hotel    @relation(fields: [hotelId], references: [id])
+  rooms       Room[]   // Many-to-many: which rooms this rate plan applies to
+  bookings    Booking[]
+}
+
+model RoomPrice {
+  id         String   @id @default(cuid())
+  roomId     String
+  date       DateTime @db.Date
+  price      Decimal  @db.Decimal(10, 2) // Використовуємо Decimal для грошей!
+  
+  room       Room     @relation(fields: [roomId], references: [id])
+
+  @@unique([roomId, date])
 }
 
 enum RoomInventoryStatus {
@@ -115,143 +155,156 @@ model RoomInventory {
   roomTypeId     String
   date           DateTime @db.Date
   totalInventory Int
-  bookedCount    Int
-  status         RoomInventoryStatus
-
-  room Room @relation(fields: [roomTypeId], references: [id])
+  bookedCount    Int      @default(0)
+  status         RoomInventoryStatus @default(available)
+  
+  room           Room     @relation(fields: [roomTypeId], references: [id])
 
   @@id([roomTypeId, date])
+  @@index([date])
+}
+
+// --- БРОНЮВАННЯ ТА ПЛАТЕЖІ ---
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  CHECKED_IN
+  CHECKED_OUT
+  NO_SHOW
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  hotelId       String
+  roomId        String
+  ratePlanId    String
+  guestId       String
+  status        BookingStatus @default(PENDING)
+  
+  checkInDate   DateTime      @db.Date
+  checkOutDate  DateTime      @db.Date
+  
+  totalPrice    Decimal       @db.Decimal(10, 2)
+  priceAtBooking Decimal      @db.Decimal(10, 2) // Snapshot of nightly price at booking time
+  currency      String
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  hotel         Hotel         @relation(fields: [hotelId], references: [id])
+  room          Room          @relation(fields: [roomId], references: [id])
+  ratePlan      RatePlan      @relation(fields: [ratePlanId], references: [id])
+  guest         Guest         @relation(fields: [guestId], references: [id])
+  
+  payments      Payment[]
+  messages      Message[]
+  checkInSessions CheckInSession[]
+  bookingGuests BookingGuest[]
+
+  @@index([hotelId, checkInDate, checkOutDate])
+  @@index([status])
 }
 
 model Guest {
   id        String   @id @default(cuid())
   email     String
   phone     String?
-  fullName  String
-  createdAt DateTime @default(now())
-
-  bookings Booking[]
-}
-
-model Booking {
-  id           String   @id @default(cuid())
-  hotelId      String
-  roomId       String
-  guestId      String?
-  status       String // PENDING | CONFIRMED | CANCELLED
-  checkInDate  DateTime
-  checkOutDate DateTime
-  totalPrice   Float
-  createdAt    DateTime @default(now())
-
-  hotel           Hotel            @relation(fields: [hotelId], references: [id])
-  room            Room             @relation(fields: [roomId], references: [id])
-  guest           Guest?           @relation(fields: [guestId], references: [id])
-  bookingGuests   BookingGuest[]
-  payments        Payment[]
-  checkInSessions CheckInSession[]
-  messages        Message[]
-  reviews         Review[]
+  firstName String
+  lastName  String
+  
+  bookings  Booking[]
+  bookingGuests BookingGuest[]
 }
 
 model BookingGuest {
-  id             String @id @default(cuid())
-  bookingId      String
-  fullName       String
-  documentNumber String
-
-  booking Booking @relation(fields: [bookingId], references: [id])
+  id        String @id @default(cuid())
+  bookingId String
+  guestId   String?
+  firstName String
+  lastName  String
+  email     String?
+  phone     String?
+  
+  booking   Booking @relation(fields: [bookingId], references: [id])
+  guest     Guest?  @relation(fields: [guestId], references: [id])
 }
 
 model Payment {
-  id        String   @id @default(cuid())
-  bookingId String
-  amount    Float
-  status    String // PENDING | PAID | FAILED
-  provider  String
-  createdAt DateTime @default(now())
-
-  booking Booking @relation(fields: [bookingId], references: [id])
+  id            String        @id @default(cuid())
+  bookingId     String
+  amount        Decimal       @db.Decimal(10, 2)
+  status        PaymentStatus @default(PENDING)
+  transactionId String?       @unique // ID з Stripe/PayPal
+  
+  createdAt     DateTime      @default(now())
+  booking       Booking       @relation(fields: [bookingId], references: [id])
 }
 
-model CheckInSession {
-  id        String   @id @default(cuid())
-  bookingId String
-  token     String   @unique
-  expiresAt DateTime
-  completed Boolean  @default(false)
-  createdAt DateTime @default(now())
+// --- ІНШЕ ---
 
-  booking     Booking       @relation(fields: [bookingId], references: [id])
-  checkInData CheckInData[]
-}
-
-model CheckInData {
-  id               String  @id @default(cuid())
-  checkInSessionId String
-  guestName        String
-  documentNumber   String
-  documentPhotoUrl String?
-  signed           Boolean @default(false)
-
-  checkInSession CheckInSession @relation(fields: [checkInSessionId], references: [id])
-}
-
-model File {
-  id        String   @id @default(cuid())
-  url       String
-  type      String // IMAGE | DOCUMENT
-  size      Int
-  createdAt DateTime @default(now())
-}
-
-model Message {
-  id         String   @id @default(cuid())
-  bookingId  String
-  senderType String // GUEST | HOST
-  content    String
-  createdAt  DateTime @default(now())
-
-  booking Booking @relation(fields: [bookingId], references: [id])
-}
-
-model Review {
-  id        String   @id @default(cuid())
-  hotelId   String
-  userId    String?
-  bookingId String?
-  rating    Int // 1-5
-  comment   String?
-  createdAt DateTime @default(now())
-
-  hotel   Hotel    @relation(fields: [hotelId], references: [id])
-  user    User?    @relation(fields: [userId], references: [id])
-  booking Booking? @relation(fields: [bookingId], references: [id])
+model Amenity {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  category String? // Bathroom, Bedroom, Media
+  hotels  Hotel[]  @relation("HotelAmenities")
+  rooms   Room[]   @relation("RoomAmenities")
 }
 
 model Promotion {
-  id            String   @id @default(cuid())
-  hotelId       String
-  code          String
-  description   String?
-  discountType  String // PERCENTAGE | FIXED
-  discountValue Float
-  startDate     DateTime
-  endDate       DateTime
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-
-  hotel Hotel @relation(fields: [hotelId], references: [id])
+  id          String   @id @default(cuid())
+  hotelId     String
+  name        String
+  description String?
+  discountType String  // PERCENTAGE, FIXED
+  discountValue Decimal @db.Decimal(10, 2)
+  validFrom   DateTime
+  validTo     DateTime
+  isActive    Boolean  @default(true)
+  
+  hotel       Hotel    @relation(fields: [hotelId], references: [id])
 }
 
 model Tax {
   id          String   @id @default(cuid())
   hotelId     String
-  name        String // e.g., VAT, City Tax
-  type        String // PERCENTAGE | FIXED
-  value       Float
-  isMandatory Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  name        String   // VAT, City Tax
+  rate        Decimal  @db.Decimal(5, 2) // 0.21 for 21%
+  isPercentage Boolean @default(true)
+  
+  hotel       Hotel    @relation(fields: [hotelId], references: [id])
+}
 
-  hotel Hotel @relation(fields: [hotelId], references: [id])
+model Review {
+  id        String   @id @default(cuid())
+  hotelId   String
+  userId    String
+  bookingId String?
+  rating    Int      // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+  
+  hotel     Hotel    @relation(fields: [hotelId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  bookingId String
+  senderId  String   // User ID
+  content   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+}
+
+model CheckInSession {
+  id        String        @id @default(cuid())
+  bookingId String
+  status    CheckInStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  
+  booking   Booking       @relation(fields: [bookingId], references: [id])
 }

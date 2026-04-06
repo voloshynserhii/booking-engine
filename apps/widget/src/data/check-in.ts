@@ -4,17 +4,13 @@ export const checkInSessions: CheckInSession[] = [
   {
     id: 'ci-session1',
     bookingId: 'b1',
-    token: 'token-xyz-123-abc',
-    expiresAt: '2024-04-10T23:59:59Z',
-    completed: true,
+    status: 'COMPLETED',
     createdAt: '2024-04-06T10:00:00Z',
   },
   {
     id: 'ci-session2',
     bookingId: 'b2',
-    token: 'token-abc-456-def',
-    expiresAt: '2024-04-13T23:59:59Z',
-    completed: false,
+    status: 'PENDING',
     createdAt: '2024-04-09T14:00:00Z',
   },
 ];

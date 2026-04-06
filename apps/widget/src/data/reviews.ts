@@ -4,6 +4,7 @@ export const reviews: Review[] = [
   {
     id: 'rev1',
     hotelId: 'h1',
+    userId: 'g1',
     bookingId: 'b1',
     rating: 5,
     comment: 'Excellent hotel with great service. Highly recommended!',
@@ -12,6 +13,7 @@ export const reviews: Review[] = [
   {
     id: 'rev2',
     hotelId: 'h1',
+    userId: 'g2',
     bookingId: 'b2',
     rating: 4,
     comment: 'Nice rooms and friendly staff. Could improve breakfast variety.',
@@ -20,6 +22,7 @@ export const reviews: Review[] = [
   {
     id: 'rev3',
     hotelId: 'h1',
+    userId: 'g3',
     bookingId: 'b3',
     rating: 4,
     comment: 'Good location and clean rooms. WiFi could be faster.',
@@ -28,6 +31,7 @@ export const reviews: Review[] = [
   {
     id: 'rev4',
     hotelId: 'h1',
+    userId: 'g4',
     bookingId: 'b4',
     rating: 5,
     comment: 'Amazing stay! Perfect for families.',
