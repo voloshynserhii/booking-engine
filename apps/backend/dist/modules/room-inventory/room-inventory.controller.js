@@ -9,26 +9,26 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AvailabilityController = void 0;
+exports.RoomInventoryController = void 0;
 const common_1 = require("@nestjs/common");
-const availability_service_1 = require("./availability.service");
-let AvailabilityController = class AvailabilityController {
-    constructor(availabilityService) {
-        this.availabilityService = availabilityService;
+const room_inventory_service_1 = require("./room-inventory.service");
+let RoomInventoryController = class RoomInventoryController {
+    constructor(roomInventoryService) {
+        this.roomInventoryService = roomInventoryService;
     }
-    getAvailability() {
+    getRoomInventory() {
         return { success: true };
     }
 };
-exports.AvailabilityController = AvailabilityController;
+exports.RoomInventoryController = RoomInventoryController;
 __decorate([
     (0, common_1.Get)(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
-], AvailabilityController.prototype, "getAvailability", null);
-exports.AvailabilityController = AvailabilityController = __decorate([
-    (0, common_1.Controller)('availability'),
-    __metadata("design:paramtypes", [availability_service_1.AvailabilityService])
-], AvailabilityController);
-//# sourceMappingURL=availability.controller.js.map
+], RoomInventoryController.prototype, "getRoomInventory", null);
+exports.RoomInventoryController = RoomInventoryController = __decorate([
+    (0, common_1.Controller)('room-inventory'),
+    __metadata("design:paramtypes", [room_inventory_service_1.RoomInventoryService])
+], RoomInventoryController);
+//# sourceMappingURL=room-inventory.controller.js.map

@@ -4,7 +4,7 @@ import { UserModule } from './modules/user/user.module';
 import { HotelModule } from './modules/hotel/hotel.module';
 import { HotelUserModule } from './modules/hotel-user/hotel-user.module';
 import { RoomModule } from './modules/room/room.module';
-import { AvailabilityModule } from './modules/availability/availability.module';
+import { RoomInventoryModule } from './modules/room-inventory/room-inventory.module';
 import { BookingModule } from './modules/booking/booking.module';
 import { GuestModule } from './modules/guest/guest.module';
 import { PaymentModule } from './modules/payment/payment.module';
@@ -19,7 +19,7 @@ import { MessageModule } from './modules/message/message.module';
     HotelModule,
     HotelUserModule,
     RoomModule,
-    AvailabilityModule,
+    RoomInventoryModule,
     BookingModule,
     GuestModule,
     PaymentModule,

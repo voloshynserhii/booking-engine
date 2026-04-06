@@ -6,17 +6,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AvailabilityModule = void 0;
+exports.RoomInventoryModule = void 0;
 const common_1 = require("@nestjs/common");
-const availability_controller_1 = require("./availability.controller");
-const availability_service_1 = require("./availability.service");
-let AvailabilityModule = class AvailabilityModule {
+const room_inventory_controller_1 = require("./room-inventory.controller");
+const room_inventory_service_1 = require("./room-inventory.service");
+let RoomInventoryModule = class RoomInventoryModule {
 };
-exports.AvailabilityModule = AvailabilityModule;
-exports.AvailabilityModule = AvailabilityModule = __decorate([
+exports.RoomInventoryModule = RoomInventoryModule;
+exports.RoomInventoryModule = RoomInventoryModule = __decorate([
     (0, common_1.Module)({
-        controllers: [availability_controller_1.AvailabilityController],
-        providers: [availability_service_1.AvailabilityService],
+        controllers: [room_inventory_controller_1.RoomInventoryController],
+        providers: [room_inventory_service_1.RoomInventoryService],
     })
-], AvailabilityModule);
-//# sourceMappingURL=availability.module.js.map
+], RoomInventoryModule);
+//# sourceMappingURL=room-inventory.module.js.map

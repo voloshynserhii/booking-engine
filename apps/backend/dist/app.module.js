@@ -13,7 +13,7 @@ const user_module_1 = require("./modules/user/user.module");
 const hotel_module_1 = require("./modules/hotel/hotel.module");
 const hotel_user_module_1 = require("./modules/hotel-user/hotel-user.module");
 const room_module_1 = require("./modules/room/room.module");
-const availability_module_1 = require("./modules/availability/availability.module");
+const room_inventory_module_1 = require("./modules/room-inventory/room-inventory.module");
 const booking_module_1 = require("./modules/booking/booking.module");
 const guest_module_1 = require("./modules/guest/guest.module");
 const payment_module_1 = require("./modules/payment/payment.module");
@@ -31,7 +31,7 @@ exports.AppModule = AppModule = __decorate([
             hotel_module_1.HotelModule,
             hotel_user_module_1.HotelUserModule,
             room_module_1.RoomModule,
-            availability_module_1.AvailabilityModule,
+            room_inventory_module_1.RoomInventoryModule,
             booking_module_1.BookingModule,
             guest_module_1.GuestModule,
             payment_module_1.PaymentModule,

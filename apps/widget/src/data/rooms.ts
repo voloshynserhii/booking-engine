@@ -1,0 +1,55 @@
+import { Room } from '@/src/types';
+
+export const rooms: Room[] = [
+  {
+    id: 'r1',
+    hotelId: 'h1',
+    name: 'Double Room',
+    description: 'Comfortable room with a queen-size bed, perfect for couples or solo travelers.',
+    roomType: 'Standard',
+    bedType: '1 Queen bed',
+    numberOfBeds: 1,
+    maxGuests: 2,
+    size: 35,
+    quantity: 5,
+    basePrice: 120,
+    imageUrls: [
+      'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800',
+    ],
+    createdAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 'r2',
+    hotelId: 'h1',
+    name: 'Deluxe Suite',
+    description: 'Spacious suite with king-size bed, living area, and premium amenities.',
+    roomType: 'Suite',
+    bedType: '1 King bed',
+    numberOfBeds: 1,
+    maxGuests: 4,
+    size: 55,
+    quantity: 3,
+    basePrice: 180,
+    imageUrls: [
+      'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=800',
+    ],
+    createdAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 'r3',
+    hotelId: 'h1',
+    name: 'Family Room',
+    description: 'Multi-room accommodation ideal for families with children.',
+    roomType: 'Family',
+    bedType: '2 Double beds + 2 Single beds',
+    numberOfBeds: 4,
+    maxGuests: 6,
+    size: 70,
+    quantity: 2,
+    basePrice: 250,
+    imageUrls: [
+      'https://images.unsplash.com/photo-1618882618692-6e6626ef1bf3?auto=format&fit=crop&w=800',
+    ],
+    createdAt: '2024-01-01T00:00:00Z',
+  },
+];

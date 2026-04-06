@@ -1,12 +1,12 @@
-import BookingWidget from './components/BookingWidget';
-import CheckInPage from './pages/CheckInPage';
+import { BookingWidget } from "@/src/containers";
+import { Header } from '@/src/components';
+
 
 function App() {
   return (
-    <div>
-      <h1>Booking Widget App</h1>
+    <div className="min-h-screen bg-gray-100">
+      <Header />
       <BookingWidget />
-      <CheckInPage />
     </div>
   );
 }
